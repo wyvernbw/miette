@@ -1,4 +1,5 @@
 use std::fmt::{self, Write};
+use std::path::Path;
 
 use owo_colors::{OwoColorize, Style, StyledList};
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
@@ -259,6 +260,7 @@ impl GraphicalReportHandler {
         self.render_snippets(f, diagnostic, src)?;
         self.render_footer(f, diagnostic)?;
         self.render_related(f, diagnostic, src)?;
+        self.render_backtrace(f, diagnostic, src)?;
         if let Some(footer) = &self.footer {
             writeln!(f)?;
             let width = self.termwidth.saturating_sub(2);
@@ -529,6 +531,84 @@ impl GraphicalReportHandler {
                 }
             }
         }
+        Ok(())
+    }
+
+    fn render_backtrace(
+        &self,
+        f: &mut impl fmt::Write,
+        diagnostic: &dyn Diagnostic,
+        parent_src: Option<&dyn SourceCode>,
+    ) -> fmt::Result {
+        let mut root = diagnostic;
+        while let Some(source) = root.diagnostic_source() {
+            root = source;
+        }
+        match &root.backtrace() {
+            Some(backtrace) => {
+                writeln!(f, "captured backtrace:")?;
+                let cwd = std::env::current_dir().ok();
+
+                // will print a list a bit like:
+                // 0: function
+                // -> ./src/source.rs at line {}, column {}
+                for (idx, frame) in backtrace.frames().iter().enumerate() {
+                    // print frame index
+                    write!(f, "\t{}: ", idx.red())?;
+
+                    if frame.symbols().is_empty() {
+                        writeln!(f, "{}", "<unknown>".dimmed())?;
+                        continue;
+                    }
+
+                    for symbol in frame.symbols() {
+                        match symbol.name() {
+                            Some(name) => writeln!(f, "{:#}", name.red())?,
+                            None => writeln!(f, "{}", "<unknown>".dimmed())?,
+                        };
+                        write!(f, "\t{} ", self.theme.characters.lbot.red())?;
+                        let filename = symbol.filename();
+                        let filename: Option<&Path> = match (filename, &cwd) {
+                            (None, None) => None,
+                            (None, Some(_)) => None,
+                            (Some(filename), None) => Some(filename),
+                            (Some(filename), Some(cwd)) => {
+                                filename.strip_prefix(cwd).ok().or(Some(filename))
+                            }
+                        };
+                        write!(f, "{}", "in file ".dimmed())?;
+                        match filename {
+                            Some(filename) => {
+                                write!(f, "{}", filename.display())?;
+                            }
+                            None => write!(f, "{}", "<unknown>".dimmed())?,
+                        }
+
+                        write!(f, "{}", ", line ".dimmed())?;
+                        match symbol.lineno() {
+                            Some(lineno) => {
+                                write!(f, "{}", lineno)?;
+                            }
+                            None => {
+                                write!(f, "?")?;
+                            }
+                        }
+                        write!(f, "{}", ", column ".dimmed())?;
+                        match symbol.colno() {
+                            Some(colno) => {
+                                write!(f, "{}", colno)?;
+                            }
+                            None => {
+                                write!(f, "?")?;
+                            }
+                        }
+
+                        writeln!(f)?;
+                    }
+                }
+            }
+            None => writeln!(f, "no backtrace captured.")?,
+        };
         Ok(())
     }
 
