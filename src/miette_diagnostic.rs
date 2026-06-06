@@ -6,7 +6,7 @@ use std::{
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::{Diagnostic, LabeledSpan, Severity};
+use crate::{optional_backtrace, Diagnostic, LabeledSpan, Severity};
 
 /// Diagnostic that can be created at runtime.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -36,6 +36,25 @@ pub struct MietteDiagnostic {
     /// Labels to apply to this `Diagnostic`'s [`Diagnostic::source_code`]
     #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Option::is_none"))]
     pub labels: Option<Vec<LabeledSpan>>,
+    #[cfg_attr(feature = "serde", serde(skip))]
+    backtrace: CapturedBacktrace,
+}
+
+#[derive(Debug, Clone)]
+struct CapturedBacktrace(Option<backtrace::Backtrace>);
+
+impl PartialEq for CapturedBacktrace {
+    fn eq(&self, _: &Self) -> bool {
+        true
+    }
+}
+
+impl Eq for CapturedBacktrace {}
+
+impl Default for CapturedBacktrace {
+    fn default() -> Self {
+        CapturedBacktrace(optional_backtrace())
+    }
 }
 
 impl Display for MietteDiagnostic {
@@ -79,6 +98,10 @@ impl Diagnostic for MietteDiagnostic {
             .map(Box::new)
             .map(|b| b as Box<dyn Iterator<Item = LabeledSpan>>)
     }
+
+    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+        self.backtrace.0.as_ref()
+    }
 }
 
 impl MietteDiagnostic {
@@ -100,6 +123,7 @@ impl MietteDiagnostic {
             code: None,
             help: None,
             url: None,
+            backtrace: CapturedBacktrace::default(),
         }
     }
 

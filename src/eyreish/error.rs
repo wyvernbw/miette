@@ -431,7 +431,7 @@ impl Report {
     where
         E: std::error::Error + Send + Sync + 'static,
     {
-        super::DiagnosticError(Box::new(err)).into()
+        super::DiagnosticError::new(Box::new(err)).into()
     }
 }
 

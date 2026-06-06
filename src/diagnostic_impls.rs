@@ -38,6 +38,10 @@ impl Diagnostic for Infallible {
     fn diagnostic_source(&self) -> Option<&dyn Diagnostic> {
         match *self {}
     }
+
+    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+        match *self {}
+    }
 }
 
 #[cfg(test)]

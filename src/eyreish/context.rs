@@ -190,6 +190,10 @@ where
     fn related<'a>(&'a self) -> Option<Box<dyn Iterator<Item = &'a dyn Diagnostic> + 'a>> {
         self.error.related()
     }
+
+    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+        self.error.backtrace()
+    }
 }
 
 impl<D> Diagnostic for ContextError<D, Report>
@@ -222,6 +226,10 @@ where
 
     fn related<'a>(&'a self) -> Option<Box<dyn Iterator<Item = &'a dyn Diagnostic> + 'a>> {
         self.error.related()
+    }
+
+    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+        self.error.backtrace()
     }
 }
 

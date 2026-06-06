@@ -89,6 +89,10 @@ impl Diagnostic for BoxedError {
     fn diagnostic_source(&self) -> Option<&dyn Diagnostic> {
         self.0.diagnostic_source()
     }
+
+    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+        self.0.backtrace()
+    }
 }
 
 impl Debug for BoxedError {

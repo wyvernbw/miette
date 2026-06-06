@@ -67,6 +67,11 @@ pub trait Diagnostic: std::error::Error {
     fn diagnostic_source(&self) -> Option<&dyn Diagnostic> {
         None
     }
+
+    /// captured backtrace.
+    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+        None
+    }
 }
 
 macro_rules! box_error_impls {
@@ -174,7 +179,7 @@ impl From<String> for Box<dyn Diagnostic + Send + Sync> {
 
 impl From<Box<dyn std::error::Error + Send + Sync>> for Box<dyn Diagnostic + Send + Sync> {
     fn from(s: Box<dyn std::error::Error + Send + Sync>) -> Self {
-        Box::new(DiagnosticError(s))
+        Box::new(DiagnosticError::new(s))
     }
 }
 

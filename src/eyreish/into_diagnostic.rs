@@ -5,7 +5,25 @@ use crate::{Diagnostic, Report};
 /// Convenience [`Diagnostic`] that can be used as an "anonymous" wrapper for
 /// Errors. This is intended to be paired with [`IntoDiagnostic`].
 #[derive(Debug)]
-pub(crate) struct DiagnosticError(pub(crate) Box<dyn std::error::Error + Send + Sync + 'static>);
+pub(crate) struct DiagnosticError(
+    pub(crate) Box<dyn std::error::Error + Send + Sync + 'static>,
+    Option<backtrace::Backtrace>,
+);
+
+pub(crate) fn optional_backtrace() -> Option<backtrace::Backtrace> {
+    #[cfg(feature = "fancy")]
+    let backtrace = Some(backtrace::Backtrace::new());
+    #[cfg(not(feature = "fancy"))]
+    let backtrace = None;
+    backtrace
+}
+
+impl DiagnosticError {
+    pub(crate) fn new(error: Box<dyn std::error::Error + Send + Sync + 'static>) -> Self {
+        let backtrace = optional_backtrace();
+        Self(error, backtrace)
+    }
+}
 
 impl Display for DiagnosticError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -19,7 +37,11 @@ impl Error for DiagnosticError {
     }
 }
 
-impl Diagnostic for DiagnosticError {}
+impl Diagnostic for DiagnosticError {
+    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+        self.1.as_ref()
+    }
+}
 
 /**
 Convenience trait that adds a [`.into_diagnostic()`](IntoDiagnostic::into_diagnostic) method that converts a type implementing
@@ -40,7 +62,7 @@ pub trait IntoDiagnostic<T, E> {
 
 impl<T, E: std::error::Error + Send + Sync + 'static> IntoDiagnostic<T, E> for Result<T, E> {
     fn into_diagnostic(self) -> Result<T, Report> {
-        self.map_err(|e| DiagnosticError(Box::new(e)).into())
+        self.map_err(|e| DiagnosticError::new(Box::new(e)).into())
     }
 }
 

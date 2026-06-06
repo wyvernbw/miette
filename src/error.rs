@@ -74,6 +74,10 @@ impl Diagnostic for MietteError {
             crate_version, variant,
         )))
     }
+
+    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+        None
+    }
 }
 
 #[cfg(test)]
