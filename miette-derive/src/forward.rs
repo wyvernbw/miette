@@ -84,7 +84,7 @@ impl WhichFn {
                 fn diagnostic_source(&self) -> std::option::Option<&dyn miette::Diagnostic>
             },
             Self::Backtrace => quote! {
-                fn backtrace(&self) -> &miette::miette_diagnostic::capture_backtrace::CapturedBacktrace
+                fn backtrace(&self) -> &miette::capture_backtrace::CapturedBacktrace
             },
         }
     }
@@ -92,7 +92,7 @@ impl WhichFn {
     pub fn catchall_arm(&self) -> TokenStream {
         match self {
             WhichFn::Backtrace => quote! {
-                _ => &miette::miette_diagnostic::capture_backtrace::NO_BACKTRACE
+                _ => &miette::capture_backtrace::NO_BACKTRACE
             },
             _ => {
                 quote! { _ => std::option::Option::None }
