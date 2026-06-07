@@ -583,31 +583,32 @@ impl GraphicalReportHandler {
                                 filename.strip_prefix(cwd).ok().or(Some(filename))
                             }
                         };
-                        write!(f, "{}", "in file ".dimmed())?;
+
+                        write!(f, "{}", "at ".dimmed())?;
+                        match symbol.lineno() {
+                            Some(lineno) => {
+                                write!(f, "{:}", lineno)?;
+                            }
+                            None => {
+                                write!(f, "?")?;
+                            }
+                        }
+                        write!(f, "{}", ":".dimmed())?;
+                        match symbol.colno() {
+                            Some(colno) => {
+                                write!(f, "{:}", colno)?;
+                            }
+                            None => {
+                                write!(f, "?")?;
+                            }
+                        }
+
+                        write!(f, "{}", "\tin file ".dimmed())?;
                         match filename {
                             Some(filename) => {
                                 write!(f, "{}", filename.display())?;
                             }
                             None => write!(f, "{}", "<unknown>".dimmed())?,
-                        }
-
-                        write!(f, "{}", ", line ".dimmed())?;
-                        match symbol.lineno() {
-                            Some(lineno) => {
-                                write!(f, "{}", lineno)?;
-                            }
-                            None => {
-                                write!(f, "?")?;
-                            }
-                        }
-                        write!(f, "{}", ", column ".dimmed())?;
-                        match symbol.colno() {
-                            Some(colno) => {
-                                write!(f, "{}", colno)?;
-                            }
-                            None => {
-                                write!(f, "?")?;
-                            }
                         }
 
                         writeln!(f)?;
