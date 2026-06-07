@@ -6,7 +6,7 @@ use std::{
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::{optional_backtrace, Diagnostic, LabeledSpan, Severity};
+use crate::{capture_backtrace::CapturedBacktrace, Diagnostic, LabeledSpan, Severity};
 
 /// Diagnostic that can be created at runtime.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -40,20 +40,62 @@ pub struct MietteDiagnostic {
     backtrace: CapturedBacktrace,
 }
 
-#[derive(Debug, Clone)]
-struct CapturedBacktrace(Option<backtrace::Backtrace>);
+pub(crate) mod capture_backtrace {
+    #[derive(Debug, Clone)]
+    #[cfg(feature = "backtrace")]
+    pub(crate) struct CapturedBacktrace(Option<backtrace::Backtrace>);
 
-impl PartialEq for CapturedBacktrace {
-    fn eq(&self, _: &Self) -> bool {
-        true
+    #[derive(Debug, Clone)]
+    #[cfg(not(feature = "backtrace"))]
+    pub(crate) struct CapturedBacktrace(());
+
+    impl PartialEq for CapturedBacktrace {
+        fn eq(&self, _: &Self) -> bool {
+            true
+        }
     }
-}
 
-impl Eq for CapturedBacktrace {}
+    impl Eq for CapturedBacktrace {}
 
-impl Default for CapturedBacktrace {
-    fn default() -> Self {
-        CapturedBacktrace(optional_backtrace())
+    impl Default for CapturedBacktrace {
+        fn default() -> Self {
+            optional_backtrace()
+        }
+    }
+
+    pub(crate) static NO_BACKTRACE: CapturedBacktrace = CapturedBacktrace::empty();
+
+    impl CapturedBacktrace {
+        pub(crate) const fn empty() -> Self {
+            #[cfg(feature = "backtrace")]
+            {
+                CapturedBacktrace(None)
+            }
+            #[cfg(not(feature = "backtrace"))]
+            {
+                CapturedBacktrace(())
+            }
+        }
+
+        #[cfg(feature = "backtrace")]
+        pub(crate) fn inner(&self) -> Option<&backtrace::Backtrace> {
+            self.0.as_ref()
+        }
+    }
+
+    pub(crate) fn optional_backtrace() -> CapturedBacktrace {
+        #[cfg(feature = "backtrace")]
+        {
+            match std::env::var("RUST_BACKTRACE").as_deref() {
+                Ok("FULL" | "1") => CapturedBacktrace(Some(backtrace::Backtrace::new())),
+                _ => CapturedBacktrace(None),
+            }
+        }
+
+        #[cfg(not(feature = "backtrace"))]
+        {
+            CapturedBacktrace(())
+        }
     }
 }
 
@@ -99,8 +141,8 @@ impl Diagnostic for MietteDiagnostic {
             .map(|b| b as Box<dyn Iterator<Item = LabeledSpan>>)
     }
 
-    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
-        self.backtrace.0.as_ref()
+    fn backtrace(&self) -> &CapturedBacktrace {
+        &self.backtrace
     }
 }
 

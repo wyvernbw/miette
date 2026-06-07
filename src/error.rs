@@ -4,7 +4,10 @@ use std::{
     io,
 };
 
-use crate::Diagnostic;
+use crate::{
+    capture_backtrace::{CapturedBacktrace, NO_BACKTRACE},
+    Diagnostic,
+};
 
 /**
 Error enum for miette. Used by certain operations in the protocol.
@@ -75,8 +78,11 @@ impl Diagnostic for MietteError {
         )))
     }
 
-    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
-        None
+    fn backtrace(&self) -> &CapturedBacktrace {
+        match self.diagnostic_source() {
+            Some(src) => src.backtrace(),
+            None => &NO_BACKTRACE,
+        }
     }
 }
 

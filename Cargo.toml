@@ -62,6 +62,7 @@ fancy-no-backtrace = [
     "dep:supports-color",
     "dep:supports-unicode",
 ]
+backtrace = ["dep:backtrace"]
 fancy = ["fancy-no-backtrace", "dep:backtrace", "dep:backtrace-ext"]
 syntect-highlighter = ["fancy-no-backtrace", "dep:syntect"]
 

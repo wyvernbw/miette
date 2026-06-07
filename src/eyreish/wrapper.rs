@@ -2,6 +2,7 @@ use core::fmt::{self, Debug, Display};
 
 use std::error::Error as StdError;
 
+use crate::capture_backtrace::CapturedBacktrace;
 use crate::{Diagnostic, LabeledSpan, Report, SourceCode};
 
 use crate as miette;
@@ -90,7 +91,7 @@ impl Diagnostic for BoxedError {
         self.0.diagnostic_source()
     }
 
-    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+    fn backtrace(&self) -> &CapturedBacktrace {
         self.0.backtrace()
     }
 }
@@ -161,7 +162,7 @@ impl<E: Diagnostic, C: SourceCode> Diagnostic for WithSourceCode<E, C> {
         self.error.diagnostic_source()
     }
 
-    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+    fn backtrace(&self) -> &CapturedBacktrace {
         self.error.backtrace()
     }
 }
@@ -199,7 +200,7 @@ impl<C: SourceCode> Diagnostic for WithSourceCode<Report, C> {
         self.error.diagnostic_source()
     }
 
-    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+    fn backtrace(&self) -> &CapturedBacktrace {
         self.error.backtrace()
     }
 }

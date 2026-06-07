@@ -1,29 +1,17 @@
 use std::{error::Error, fmt::Display};
 
-use crate::{Diagnostic, Report};
+use crate::{
+    capture_backtrace::{optional_backtrace, CapturedBacktrace},
+    Diagnostic, Report,
+};
 
 /// Convenience [`Diagnostic`] that can be used as an "anonymous" wrapper for
 /// Errors. This is intended to be paired with [`IntoDiagnostic`].
 #[derive(Debug)]
 pub(crate) struct DiagnosticError(
     pub(crate) Box<dyn std::error::Error + Send + Sync + 'static>,
-    Option<backtrace::Backtrace>,
+    CapturedBacktrace,
 );
-
-pub(crate) fn optional_backtrace() -> Option<backtrace::Backtrace> {
-    #[cfg(feature = "fancy")]
-    {
-        match std::env::var("RUST_BACKTRACE").as_deref() {
-            Ok("FULL" | "1") => Some(backtrace::Backtrace::new()),
-            _ => None,
-        }
-    }
-
-    #[cfg(not(feature = "fancy"))]
-    {
-        None
-    }
-}
 
 impl DiagnosticError {
     pub(crate) fn new(error: Box<dyn std::error::Error + Send + Sync + 'static>) -> Self {
@@ -45,8 +33,8 @@ impl Error for DiagnosticError {
 }
 
 impl Diagnostic for DiagnosticError {
-    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
-        self.1.as_ref()
+    fn backtrace(&self) -> &CapturedBacktrace {
+        &self.1
     }
 }
 

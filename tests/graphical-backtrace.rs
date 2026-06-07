@@ -1,4 +1,5 @@
 #![cfg(feature = "fancy")]
+#![cfg(feature = "backtrace")]
 
 use miette::{LabeledSpan, Report};
 

@@ -4,7 +4,7 @@ Default trait implementations for [`Diagnostic`].
 
 use std::{convert::Infallible, fmt::Display};
 
-use crate::{Diagnostic, LabeledSpan, Severity, SourceCode};
+use crate::{capture_backtrace::CapturedBacktrace, Diagnostic, LabeledSpan, Severity, SourceCode};
 
 impl Diagnostic for Infallible {
     fn code<'a>(&'a self) -> Option<Box<dyn Display + 'a>> {
@@ -39,7 +39,7 @@ impl Diagnostic for Infallible {
         match *self {}
     }
 
-    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+    fn backtrace(&self) -> &CapturedBacktrace {
         match *self {}
     }
 }

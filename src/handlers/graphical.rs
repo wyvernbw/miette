@@ -534,17 +534,18 @@ impl GraphicalReportHandler {
         Ok(())
     }
 
+    #[cfg(feature = "backtrace")]
     fn render_backtrace(
         &self,
         f: &mut impl fmt::Write,
         diagnostic: &dyn Diagnostic,
-        parent_src: Option<&dyn SourceCode>,
+        _: Option<&dyn SourceCode>,
     ) -> fmt::Result {
         let mut root = diagnostic;
         while let Some(source) = root.diagnostic_source() {
             root = source;
         }
-        match &root.backtrace() {
+        match &root.backtrace().inner() {
             Some(backtrace) => {
                 writeln!(f, "captured backtrace:")?;
                 let cwd = std::env::current_dir().ok();
@@ -616,6 +617,15 @@ impl GraphicalReportHandler {
             None => writeln!(f, "no backtrace captured.")?,
         };
         Ok(())
+    }
+
+    #[cfg(not(feature = "backtrace"))]
+    fn render_backtrace(
+        &self,
+        f: &mut impl fmt::Write,
+        diagnostic: &dyn Diagnostic,
+        parent_src: Option<&dyn SourceCode>,
+    ) -> fmt::Result {
     }
 
     fn render_snippets(

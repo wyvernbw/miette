@@ -12,6 +12,7 @@ use std::{
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
+use crate::capture_backtrace::CapturedBacktrace;
 use crate::{DiagnosticError, MietteError};
 
 /// Adds rich metadata to your Error that can be used by
@@ -69,8 +70,13 @@ pub trait Diagnostic: std::error::Error {
     }
 
     /// captured backtrace.
-    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
-        None
+    fn backtrace(&self) -> &CapturedBacktrace {
+        use crate::capture_backtrace::NO_BACKTRACE;
+
+        match self.diagnostic_source() {
+            Some(src) => src.backtrace(),
+            None => &NO_BACKTRACE,
+        }
     }
 }
 

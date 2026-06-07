@@ -4,6 +4,7 @@ use core::fmt::{self, Debug, Display, Write};
 
 use std::error::Error as StdError;
 
+use crate::capture_backtrace::CapturedBacktrace;
 use crate::{Diagnostic, LabeledSpan};
 
 mod ext {
@@ -191,7 +192,7 @@ where
         self.error.related()
     }
 
-    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+    fn backtrace(&self) -> &CapturedBacktrace {
         self.error.backtrace()
     }
 }
@@ -228,7 +229,7 @@ where
         self.error.related()
     }
 
-    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+    fn backtrace(&self) -> &CapturedBacktrace {
         self.error.backtrace()
     }
 }
