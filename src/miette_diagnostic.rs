@@ -6,7 +6,9 @@ use std::{
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::{capture_backtrace::CapturedBacktrace, Diagnostic, LabeledSpan, Severity};
+use crate::{Diagnostic, LabeledSpan, Severity};
+
+pub use capture_backtrace::CapturedBacktrace;
 
 /// Diagnostic that can be created at runtime.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -41,13 +43,9 @@ pub struct MietteDiagnostic {
 }
 
 pub(crate) mod capture_backtrace {
+    /// Wrapper around [`backtrace::Backtrace`]. Zero size if `backtrace` feature is disabled.
     #[derive(Debug, Clone)]
-    #[cfg(feature = "backtrace")]
-    pub(crate) struct CapturedBacktrace(Option<backtrace::Backtrace>);
-
-    #[derive(Debug, Clone)]
-    #[cfg(not(feature = "backtrace"))]
-    pub(crate) struct CapturedBacktrace(());
+    pub struct CapturedBacktrace(#[cfg(feature = "backtrace")] Option<backtrace::Backtrace>);
 
     impl PartialEq for CapturedBacktrace {
         fn eq(&self, _: &Self) -> bool {
@@ -73,7 +71,7 @@ pub(crate) mod capture_backtrace {
             }
             #[cfg(not(feature = "backtrace"))]
             {
-                CapturedBacktrace(())
+                CapturedBacktrace()
             }
         }
 
@@ -94,7 +92,7 @@ pub(crate) mod capture_backtrace {
 
         #[cfg(not(feature = "backtrace"))]
         {
-            CapturedBacktrace(())
+            CapturedBacktrace()
         }
     }
 }
