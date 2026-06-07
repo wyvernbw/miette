@@ -626,6 +626,7 @@ impl GraphicalReportHandler {
         diagnostic: &dyn Diagnostic,
         parent_src: Option<&dyn SourceCode>,
     ) -> fmt::Result {
+        Ok(())
     }
 
     fn render_snippets(
