@@ -14,7 +14,7 @@ pub(crate) fn optional_backtrace() -> Option<backtrace::Backtrace> {
     #[cfg(feature = "fancy")]
     {
         match std::env::var("RUST_BACKTRACE").as_deref() {
-            Ok("full" | "FULL" | "1") => Some(backtrace::Backtrace::new()),
+            Ok("FULL" | "1") => Some(backtrace::Backtrace::new()),
             _ => None,
         }
     }
