@@ -12,10 +12,17 @@ pub(crate) struct DiagnosticError(
 
 pub(crate) fn optional_backtrace() -> Option<backtrace::Backtrace> {
     #[cfg(feature = "fancy")]
-    let backtrace = Some(backtrace::Backtrace::new());
+    {
+        match std::env::var("RUST_BACKTRACE").as_deref() {
+            Ok("FULL" | "1") => Some(backtrace::Backtrace::new()),
+            _ => None,
+        }
+    }
+
     #[cfg(not(feature = "fancy"))]
-    let backtrace = None;
-    backtrace
+    {
+        None
+    }
 }
 
 impl DiagnosticError {
