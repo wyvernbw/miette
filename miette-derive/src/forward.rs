@@ -39,6 +39,7 @@ pub enum WhichFn {
     SourceCode,
     Related,
     DiagnosticSource,
+    Backtrace,
 }
 
 impl WhichFn {
@@ -52,6 +53,7 @@ impl WhichFn {
             Self::SourceCode => quote! { source_code() },
             Self::Related => quote! { related() },
             Self::DiagnosticSource => quote! { diagnostic_source() },
+            Self::Backtrace => quote! { backtrace() },
         }
     }
 
@@ -80,6 +82,9 @@ impl WhichFn {
             },
             Self::DiagnosticSource => quote! {
                 fn diagnostic_source(&self) -> std::option::Option<&dyn miette::Diagnostic>
+            },
+            Self::Backtrace => quote! {
+                fn backtrace(&self) -> &miette::miette_diagnostic::capture_backtrace::CapturedBacktrace
             },
         }
     }

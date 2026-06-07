@@ -289,6 +289,7 @@ impl Diagnostic {
                         let related_method = forward.gen_struct_method(WhichFn::Related);
                         let diagnostic_source_method =
                             forward.gen_struct_method(WhichFn::DiagnosticSource);
+                        let backtrace_method = forward.gen_struct_method(WhichFn::Backtrace);
 
                         quote! {
                             impl #impl_generics miette::Diagnostic for #ident #ty_generics #where_clause {
@@ -300,6 +301,7 @@ impl Diagnostic {
                                 #source_code_method
                                 #related_method
                                 #diagnostic_source_method
+                                #backtrace_method
                             }
                         }
                     }
