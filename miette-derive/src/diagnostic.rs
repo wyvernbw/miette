@@ -12,6 +12,7 @@ use crate::related::Related;
 use crate::severity::Severity;
 use crate::source_code::SourceCode;
 use crate::url::Url;
+use crate::utils::gen_all_variants_with;
 
 pub enum Diagnostic {
     Struct {
@@ -381,6 +382,12 @@ impl Diagnostic {
                 let rel_body = Related::gen_enum(variants);
                 let url_body = Url::gen_enum(ident, variants);
                 let diagnostic_source_body = DiagnosticSource::gen_enum(variants);
+                let backtrace_body =
+                    gen_all_variants_with(variants, WhichFn::Backtrace, |ident, _, args| {
+                        args.forward
+                            .as_ref()
+                            .map(|forward| forward.gen_enum_match_arm(ident, WhichFn::Backtrace))
+                    });
                 quote! {
                     impl #impl_generics miette::Diagnostic for #ident #ty_generics #where_clause {
                         #code_body
@@ -391,6 +398,7 @@ impl Diagnostic {
                         #rel_body
                         #url_body
                         #diagnostic_source_body
+                        #backtrace_body
                     }
                 }
             }
