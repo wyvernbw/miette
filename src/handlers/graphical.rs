@@ -566,7 +566,13 @@ impl GraphicalReportHandler {
                             Some(name) => writeln!(f, "{:#}", name.red())?,
                             None => writeln!(f, "{}", "<unknown>".dimmed())?,
                         };
-                        write!(f, "\t{} ", self.theme.characters.lbot.red())?;
+                        write!(
+                            f,
+                            "\t{}{}{} ",
+                            self.theme.characters.lbot.red(),
+                            self.theme.characters.hbar.red(),
+                            self.theme.characters.rarrow.red()
+                        )?;
                         let filename = symbol.filename();
                         let filename: Option<&Path> = match (filename, &cwd) {
                             (None, None) => None,
