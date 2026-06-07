@@ -90,7 +90,14 @@ impl WhichFn {
     }
 
     pub fn catchall_arm(&self) -> TokenStream {
-        quote! { _ => std::option::Option::None }
+        match self {
+            WhichFn::Backtrace => quote! {
+                _ => &miette::miette_diagnostic::capture_backtrace::NO_BACKTRACE
+            },
+            _ => {
+                quote! { _ => std::option::Option::None }
+            }
+        }
     }
 }
 

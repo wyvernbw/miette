@@ -42,7 +42,8 @@ pub struct MietteDiagnostic {
     backtrace: CapturedBacktrace,
 }
 
-pub(crate) mod capture_backtrace {
+/// Backtrace wrapper
+pub mod capture_backtrace {
     /// Wrapper around [`backtrace::Backtrace`]. Zero size if `backtrace` feature is disabled.
     #[derive(Debug, Clone)]
     pub struct CapturedBacktrace(#[cfg(feature = "backtrace")] Option<backtrace::Backtrace>);
@@ -61,7 +62,8 @@ pub(crate) mod capture_backtrace {
         }
     }
 
-    pub(crate) static NO_BACKTRACE: CapturedBacktrace = CapturedBacktrace::empty();
+    /// Empty backtrace
+    pub static NO_BACKTRACE: CapturedBacktrace = CapturedBacktrace::empty();
 
     impl CapturedBacktrace {
         pub(crate) const fn empty() -> Self {
