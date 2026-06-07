@@ -198,6 +198,10 @@ impl<C: SourceCode> Diagnostic for WithSourceCode<Report, C> {
     fn diagnostic_source(&self) -> Option<&dyn Diagnostic> {
         self.error.diagnostic_source()
     }
+
+    fn backtrace(&self) -> Option<&backtrace::Backtrace> {
+        self.error.backtrace()
+    }
 }
 
 impl<E: Debug, C> Debug for WithSourceCode<E, C> {

@@ -1,6 +1,6 @@
 #![cfg(feature = "fancy")]
 
-use miette::Report;
+use miette::{LabeledSpan, Report};
 
 #[test]
 fn test_report_backtrace() {
@@ -10,7 +10,11 @@ fn test_report_backtrace() {
             if rand > 60 {
                 Ok(())
             } else {
-                Err(miette::miette!("oops failed"))
+                Err(miette::miette!(
+                    labels = vec![LabeledSpan::at_offset(0, "here")],
+                    "oops failed"
+                )
+                .with_source_code("2+2"))
             }
         }
         inner_operation()?;
